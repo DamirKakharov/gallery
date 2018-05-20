@@ -1,14 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Search from './components/search/search.jsx';
-import App from './app.jsx'
+import { Provider } from 'react-redux';
+import { createStore } from 'redux';
 
+import App from './app';
+import reducer from './reducers/index';
 
-const date = new Date();
+const store = createStore(reducer);
 
 ReactDOM.render(
-	<div>
-		 <App />
-	</div>,	
-	document.getElementById("root")
+    <Provider store={store}>
+        <App />
+    </Provider>,
+    document.getElementById('root'),
 );
