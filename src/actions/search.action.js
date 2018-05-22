@@ -1,6 +1,6 @@
-export default function setSearchAction(year) {
+export default function setSearchAction(search) {
     return {
         type: 'SET_SEARCH',
-        payload: year,
+        payload: search,
     };
 }

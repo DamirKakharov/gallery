@@ -1,87 +1,92 @@
 import React from 'react';
-import Masonry from 'react-masonry-component';
 import { connect } from 'react-redux';
+import Masonry from 'react-masonry-component';
+import Lightbox from 'react-images';
 
 import Search from './components/search/search';
 import * as APIConts from './constants/api';
 import setSearchAction from './actions/search.action';
 import './app.scss';
 
-const masonryOptions = {
-    transitionDuration: '0.5s',
-    // columnWidth: 300,
-    resize: true,
-    gutter: 20,
-    percentPosition: true,
-    fitWidth: true,
-};
-
 class App extends React.Component {
     constructor() {
         super();
         this.state = {
-            hasMore: true,
+            isOpen: false,
+            page: 1,
             data: [],
-            // search: '',
+            litghboxImageSet: [
+                { src: '' },
+            ],
         };
-
-        this.updateData = this.updateData.bind(this);
     }
 
     componentDidMount() {
-        this.resp();
+        this.respDef();
     }
 
-    updateData(value) {
-        this.setState({ search: value });
-        if (value !== '') {
-            fetch('https://api.unsplash.com/search/photos?client_id='
-                + APIConts.KEY + '&page=1&query='
-                + value
-                + '&per_page=20')
+    respDef() {
+        fetch(`${APIConts.PATH}${APIConts.KEY}${APIConts.PAGE}${this.state.page}${APIConts.PER_PAGE}20`)
+            .then(Response => Response.json())
+            .then((findResponse) => {
+                this.setState({
+                    data: findResponse,
+                    // data: [...this.state.data, ...findResponse],
+                });
+            });
+    }
+
+    respSearch = () => {
+        if (this.props.search !== '') {
+            fetch(`${APIConts.PATH_SEARCH}${APIConts.KEY}${APIConts.PAGE}${this.state.page}${APIConts.QUERY}${this.props.search}${APIConts.PER_PAGE}20`)
                 .then(Response => Response.json())
                 .then((findResponse) => {
-                    console.log(findResponse.results);
                     this.setState({
                         data: findResponse.results,
                     });
                 });
         } else {
-            this.resp();
+            this.respDef();
         }
     }
 
-    resp() {
-        fetch('https://api.unsplash.com/photos?client_id=bcda5d758ceb319f79bd6eeff203a979b75cd35015bf422f5a0877b4ab03fa7a&page=2&per_page=15')
-            .then(Response => Response.json())
-            .then((findResponse) => {
-                console.log(findResponse);
-                this.setState({
-                    data: findResponse,
-                });
-            });
+    openLightbox = (event) => {
+        const srcData = event.target.getAttribute('data');
+        this.setState({ litghboxImageSet: [{ src: srcData }] });
+        this.setState({ isOpen: true });
+    }
+
+    closeLightbox = () => {
+        this.setState({ isOpen: false });
     }
 
 
     render() {
         const childElements = this.state.data.map(dynamicData =>
-            (<li className="grid__item" key={dynamicData.id} >
-                <img src={dynamicData.urls.small} alt="" />
+            (<li className="grid__item" key={dynamicData.id} onClick={this.openLightbox} role="menuitem" >
+                <img className="grid__img" src={dynamicData.urls.small} alt="" data={dynamicData.urls.full} />
             </li>),
         );
 
+
         return (
-            <div className="masonry" >
-                <Search updateData={this.updateData} setSearch={this.props.setSearchFunction} />
+            <div>
+                <Search setSearch={this.props.setSearchFunction} respSearch={this.respSearch} />
                 <Masonry
                     className={'grid'}
                     elementType={'ul'}
-                    options={masonryOptions}
-                    updateOnEachImageLoad={false}
+                    options={APIConts.masonryOptions}
                 >
                     {childElements}
                 </Masonry>
+                <Lightbox
+                    images={this.state.litghboxImageSet}
+                    isOpen={this.state.isOpen}
+                    onClose={this.closeLightbox}
+                    showImageCount={false}
+                />
             </div>
+
         );
     }
 }
