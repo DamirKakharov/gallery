@@ -10,13 +10,6 @@ body {
     width: 100%;
 }
 
-.container {
-    background: #fff;
-    padding-bottom: 16px;
-    margin-bottom: 16px;
-    padding-top: 32px;
-}
-
 .masonry {
     margin: 0 auto;
 }
@@ -33,14 +26,9 @@ body {
         align-items: center;
         margin-bottom: 10px;
     }
-}
 
-img {
-    width: 100%;
-}
-
-@media (max-width: 576px) {
-    .grid__item {
-        width: 80vw;
+    &__img {
+        width: 100%
     }
 }
+
