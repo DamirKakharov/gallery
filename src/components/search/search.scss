@@ -1,0 +1,26 @@
+.search {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 25px;
+
+    &__input {
+        padding-left: 10px;
+        border: none;
+        border-radius: 15px;
+        font-size: 1.5em;
+    }
+
+    &__button {
+        margin-left: 2px;
+        border: none;
+        border-radius: 15px;
+        font-size: 1.5em;
+        color: cornflowerblue;
+        background: white;
+    }
+}
+
+*:focus {
+    outline: none;
+}
