@@ -2,19 +2,33 @@ import React from 'react';
 import { connect } from 'react-redux';
 import Masonry from 'react-masonry-component';
 import Lightbox from 'react-images';
+import PropTypes from 'prop-types';
 
 import Search from './components/search/search';
-import * as APIConts from './constants/api';
-import setSearchAction from './actions/search.action';
+import { setSearchAction, loadHomePage, loadSearchPage } from './actions/search.action';
 import './app.scss';
 
+const masonryOptions = {
+    transitionDuration: '0.5s',
+    // columnWidth: 300,
+    resize: true,
+    gutter: 20,
+    percentPosition: true,
+    fitWidth: true,
+};
+
 class App extends React.Component {
+    static propTypes = {
+        data: PropTypes.array.isRequired,
+        loadHomePage: PropTypes.func.isRequired,
+        loadSearchPage: PropTypes.func.isRequired,
+        setSearchFunction: PropTypes.func.isRequired,
+        search: PropTypes.string.isRequired,
+    };
     constructor() {
         super();
         this.state = {
             isOpen: false,
-            page: 1,
-            data: [],
             litghboxImageSet: [
                 { src: '' },
             ],
@@ -22,60 +36,43 @@ class App extends React.Component {
     }
 
     componentDidMount() {
-        this.respDef();
-    }
-
-    respDef() {
-        fetch(`${APIConts.PATH}${APIConts.KEY}${APIConts.PAGE}${this.state.page}${APIConts.PER_PAGE}20`)
-            .then(Response => Response.json())
-            .then((findResponse) => {
-                this.setState({
-                    data: findResponse,
-                    // data: [...this.state.data, ...findResponse],
-                });
-            });
+        this.props.loadHomePage();
     }
 
     respSearch = () => {
         if (this.props.search !== '') {
-            fetch(`${APIConts.PATH_SEARCH}${APIConts.KEY}${APIConts.PAGE}${this.state.page}${APIConts.QUERY}${this.props.search}${APIConts.PER_PAGE}20`)
-                .then(Response => Response.json())
-                .then((findResponse) => {
-                    this.setState({
-                        data: findResponse.results,
-                    });
-                });
+            this.props.loadSearchPage(this.props.search);
         } else {
-            this.respDef();
+            this.props.loadHomePage();
         }
     }
 
     openLightbox = (event) => {
         const srcData = event.target.getAttribute('data');
-        this.setState({ litghboxImageSet: [{ src: srcData }] });
-        this.setState({ isOpen: true });
+        this.setState({
+            litghboxImageSet: [{ src: srcData }],
+            isOpen: true,
+        });
     }
 
     closeLightbox = () => {
         this.setState({ isOpen: false });
     }
 
-
     render() {
-        const childElements = this.state.data.map(dynamicData =>
+        const childElements = this.props.data.map(dynamicData =>
             (<li className="grid__item" key={dynamicData.id} onClick={this.openLightbox} role="menuitem" >
                 <img className="grid__img" src={dynamicData.urls.small} alt="" data={dynamicData.urls.full} />
             </li>),
         );
 
-
         return (
             <div>
                 <Search setSearch={this.props.setSearchFunction} respSearch={this.respSearch} />
                 <Masonry
-                    className={'grid'}
-                    elementType={'ul'}
-                    options={APIConts.masonryOptions}
+                    className="grid"
+                    elementType="ul"
+                    options={masonryOptions}
                 >
                     {childElements}
                 </Masonry>
@@ -86,7 +83,6 @@ class App extends React.Component {
                     showImageCount={false}
                 />
             </div>
-
         );
     }
 }
@@ -94,6 +90,7 @@ class App extends React.Component {
 function mapStateToProps(state) {
     return {
         search: state.searchResponse.search,
+        data: state.homePageResponse.data,
     };
 }
 
@@ -101,6 +98,12 @@ function mapDispatchToProps(dispatch) {
     return {
         setSearchFunction: (search) => {
             dispatch(setSearchAction(search));
+        },
+        loadHomePage: () => {
+            dispatch(loadHomePage());
+        },
+        loadSearchPage: (searchResp) => {
+            dispatch(loadSearchPage(searchResp));
         },
     };
 }
